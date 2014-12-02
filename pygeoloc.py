@@ -16,12 +16,15 @@ def main():
     # Tratamos los ficheros de Autonomos
     #for file in glob.glob(PATH_DATA + '/Autonomos*.csv'):
     #print('Parsing file %s' % file)
-    frame = pd.read_csv('Empresas1.csv', sep=';')
+    frame = pd.read_csv('Empresas1(Asturias).csv', sep=';')
     frame['latitude'] = np.nan
     frame['longitude'] = np.nan
+    frame['approximation'] = np.nan
     frame['concatenated'] = np_concat(frame['Direccion'], frame['CP'], frame['Poblacion'], frame['Provincia'], frame['Comunidad Autonoma'], 'España')
-    for i in range(0,60):
-    	address = frame.ix[i, 'concatenated']
+    #for i in range(0,100):
+    for idx, row in frame.iterrows():
+    	#address = frame.ix[i, 'concatenated']
+    	address = row['concatenated']
     	#print address
     	###############################################################################
     	#						Codigo geopy										  #
@@ -43,32 +46,47 @@ def main():
     	###############################################################################
     	#						Codigo geocoder										  #
     	###############################################################################
-    	location = geocoder.google(address)
+    	location = geocoder.bing(address)
     	#print location.address
     	#print location.lat
     	#print location.lng
     	#print ""
-    	frame.loc[i, 'latitude'] = location.lat if location and location.lat else np.nan
-        frame.loc[i, 'longitude'] = location.lng if location and location.lng else np.nan
+    	#frame.loc[i, 'latitude'] = str(location.lat).replace(".",",") if location and location.lat else str(np.nan)
+        #frame.loc[i, 'longitude'] = str(location.lng).replace(".",",") if location and location.lng else str(np.nan)
+        #if location:
+        #	if location.status != "OK":
+        #		frame.loc[i, 'approximation'] = "2"
+        #	elif str(frame.loc[i, 'Direccion']) == "nan":
+        #		frame.loc[i, 'approximation'] = "2"
+        #	else:
+        #		frame.loc[i, 'approximation'] = "1"
+        #else:
+        #	frame.loc[i, 'approximation'] = np.nan
+        frame.loc[idx, 'latitude'] = str(location.lat).replace(".",",") if location and location.lat else str(np.nan)
+    	frame.loc[idx, 'longitude'] = str(location.lng).replace(".",",") if location and location.lng else str(np.nan)
+        if location:
+        	if location.status != "OK":
+        		frame.loc[idx, 'approximation'] = "2"
+        	elif str(frame.loc[idx, 'Direccion']) == "nan":
+        		frame.loc[idx, 'approximation'] = "2"
+        	else:
+        		frame.loc[idx, 'approximation'] = "1"
+        else:
+        	frame.loc[idx, 'approximation'] = np.nan
     frame.__delitem__('concatenated')
-    name = '%s_parsed' % file
-    frame.to_csv(name)
+    frame.to_csv('data_results.csv', sep=';')
     
-    #for idx, row in frame.iterrows():
-    #    progress(idx,len(frame), 'Parsing row: ')
-    #    address = row['concatenated']
-    #    location = geocoder.bing(address)
-    #    frame.loc[idx, 'latitude'] = location.lat if location and location.lat else np.nan
-    #    frame.loc[idx, 'longitude'] = location.lng if location and location.lng else np.nan
-    #frame.__delitem__('concatenated')
-    #name = '%s_parsed' % file
-    #frame.to_csv(name)
         
 def concat(*args):
     strs = [str(arg) for arg in args if not pd.isnull(arg)]
     strs[0] = strs[0].replace(","," ")
-    subchain = re.findall("[^0-9]+[0-9]{,3}",strs[0])
-    strs[0] = strs[0] if len(subchain) == 0 else subchain[0]
+    strs[0] = strs[0].replace("."," ")
+    subchain1 = re.findall("\([^\)]*\)",strs[0])
+    strs[0] = strs[0] if len(subchain1) == 0 else strs[0].replace(subchain1[0], "")
+    subchain2 = re.findall("[^0-9]+[0-9]{,3}",strs[0])
+    strs[0] = strs[0] if len(subchain2) == 0 else subchain2[0]
+    strs[2] = strs[2].replace("(",",")
+    strs[2] = strs[2].replace(")","")
     return ','.join(strs) if strs else np.nan
 
 def progress(current,total, text):
