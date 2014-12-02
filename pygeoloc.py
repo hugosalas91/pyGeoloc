@@ -66,7 +66,7 @@ def main():
     	frame.loc[idx, 'longitude'] = str(location.lng).replace(".",",") if location and location.lng else str(np.nan)
         if location:
         	if location.status != "OK":
-        		frame.loc[idx, 'approximation'] = "2"
+        		frame.loc[idx, 'approximation'] = "3"
         	elif str(frame.loc[idx, 'Direccion']) == "nan":
         		frame.loc[idx, 'approximation'] = "2"
         	else:
