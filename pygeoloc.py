@@ -16,7 +16,7 @@ def main():
     # Tratamos los ficheros de Autonomos
     #for file in glob.glob(PATH_DATA + '/Autonomos*.csv'):
     #print('Parsing file %s' % file)
-    frame = pd.read_csv('Empresas1(Asturias).csv', sep=';')
+    frame = pd.read_csv('empresas_asturias/Empresas1(Asturias).csv', sep=';')
     frame['latitude'] = np.nan
     frame['longitude'] = np.nan
     frame['approximation'] = np.nan
@@ -95,3 +95,4 @@ def progress(current,total, text):
 
 if __name__ == "__main__":
     main()
+
